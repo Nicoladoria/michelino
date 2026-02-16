@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Michelino Pane e Vino</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5efe6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .chat-box {
+        width: 400px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+    }
+    .header {
+        background: #8b4513;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 10px 10px 0 0;
+    }
+    .messages {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+    }
+    .msg {
+        margin: 8px 0;
+        padding: 8px 12px;
+        border-radius: 10px;
+        max-width: 80%;
+    }
+    .user {
+        background: #d1e7dd;
+        align-self: flex-end;
+    }
+    .bot {
+        background: #f8d7da;
+        align-self: flex-start;
+    }
+    .input-area {
+        display: flex;
+        border-top: 1px solid #ccc;
+    }
+    input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        outline: none;
+    }
+    button {
+        padding: 10px;
+        border: none;
+        background: #8b4513;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="chat-box">
+    <div class="header">🍞 Michelino Pane e Vino 🍷</div>
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+        <input type="text" id="input" placeholder="Scrivi a Michelino...">
+        <button onclick="sendMessage()">Invia</button>
+    </div>
+</div>
+
+<script>
+const responses = [
+    "Mah… con un po’ di pane caldo e un bicchiere di rosso tutto si risolve 🍷",
+    "Io su questa cosa ci metterei sopra del pane… e via nel forno!",
+    "Domanda interessante, ma senza pane è difficile rispondere 🤔🍞",
+    "Questo discorso mi fa venire sete… stappiamo?",
+    "Ai miei tempi bastava pane e vino e il mondo girava meglio!",
+    "Se non sai cosa fare, spezza il pane e versa il vino.",
+    "Pane duro e vino buono: soluzione universale.",
+    "Io la penso così: più pane, meno problemi.",
+    "Questo merita una pagnotta intera e un brindisi!",
+    "Parole sagge… ma con un po’ di vino sarebbero ancora più sagge."
+];
+
+function sendMessage() {
+    const input = document.getElementById("input");
+    const text = input.value.trim();
+    if (text === "") return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    setTimeout(() => {
+        const reply = responses[Math.floor(Math.random() * responses.length)];
+        addMessage(reply, "bot");
+    }, 500);
+}
+
+function addMessage(text, sender) {
+    const messages = document.getElementById("messages");
+    const msg = document.createElement("div");
+    msg.className = "msg " + sender;
+    msg.innerText = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
+</body>
+</html>
