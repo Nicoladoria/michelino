@@ -3,93 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <title>Michelino Pane e Vino</title>
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5efe6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    .chat-box {
-        width: 400px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        display: flex;
-        flex-direction: column;
-    }
-    .header {
-        background: #8b4513;
-        color: white;
-        padding: 15px;
-        text-align: center;
-        font-weight: bold;
-        border-radius: 10px 10px 0 0;
-    }
-    .messages {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-    }
-    .msg {
-        margin: 8px 0;
-        padding: 8px 12px;
-        border-radius: 10px;
-        max-width: 80%;
-    }
-    .user {
-        background: #d1e7dd;
-        align-self: flex-end;
-    }
-    .bot {
-        background: #f8d7da;
-        align-self: flex-start;
-    }
-    .input-area {
-        display: flex;
-        border-top: 1px solid #ccc;
-    }
-    input {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        outline: none;
-    }
-    button {
-        padding: 10px;
-        border: none;
-        background: #8b4513;
-        color: white;
-        cursor: pointer;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header-image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    margin-top: 20px;
+}
+
+.chat-box {
+    width: 95%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    background: #8b0000;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #fff8f0;
+}
+
+.msg {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 75%;
+}
+
+.user {
+    background: #d1f0ff;
+    align-self: flex-end;
+}
+
+.bot {
+    background: #ffe4c4;
+    align-self: flex-start;
+}
+
+.input-area {
+    display: flex;
+    border-top: 1px solid #ddd;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    background: #8b0000;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 </style>
 </head>
+
 <body>
+
+<img src="michelino.jpg" class="header-image">
 
 <div class="chat-box">
     <div class="header">🍞 Michelino Pane e Vino 🍷</div>
     <div class="messages" id="messages"></div>
     <div class="input-area">
-        <input type="text" id="input" placeholder="Scrivi a Michelino...">
+        <input type="text" id="input" placeholder="Parla con Michelino...">
         <button onclick="sendMessage()">Invia</button>
     </div>
 </div>
 
 <script>
-const responses = [
-    "Mah… con un po’ di pane caldo e un bicchiere di rosso tutto si risolve 🍷",
-    "Io su questa cosa ci metterei sopra del pane… e via nel forno!",
-    "Domanda interessante, ma senza pane è difficile rispondere 🤔🍞",
-    "Questo discorso mi fa venire sete… stappiamo?",
-    "Ai miei tempi bastava pane e vino e il mondo girava meglio!",
-    "Se non sai cosa fare, spezza il pane e versa il vino.",
-    "Pane duro e vino buono: soluzione universale.",
-    "Io la penso così: più pane, meno problemi.",
-    "Questo merita una pagnotta intera e un brindisi!",
-    "Parole sagge… ma con un po’ di vino sarebbero ancora più sagge."
-];
+
+function getResponse(text) {
+    text = text.toLowerCase();
+
+    if(text.includes("vino"))
+        return "Ahhh il vino… rosso, corposo e abbondante! 🍷 Senza vino la vita è come pane senza crosta!";
+    
+    if(text.includes("pane"))
+        return "Il pane è sacro! Caldo, croccante… quasi mi commuovo 🍞";
+    
+    if(text.includes("amore"))
+        return "L’amore è come il vino: migliora col tempo… e con un po’ di pane accanto 😉";
+    
+    if(text.includes("fame"))
+        return "Hai fame? Io impasto subito una pagnotta gigante! 🍞🔥";
+
+    const randomReplies = [
+        "Mah… con un po’ di pane caldo e un bicchiere di rosso tutto si risolve 🍷",
+        "Io su questa cosa ci metterei sopra del pane… e via nel forno!",
+        "Questo discorso mi fa venire sete… stappiamo?",
+        "Più pane, meno problemi.",
+        "Questo merita una pagnotta intera e un brindisi!",
+        "Michelino approva… ma solo con vino rosso!"
+    ];
+
+    return randomReplies[Math.floor(Math.random() * randomReplies.length)];
+}
 
 function sendMessage() {
     const input = document.getElementById("input");
@@ -99,10 +139,12 @@ function sendMessage() {
     addMessage(text, "user");
     input.value = "";
 
+    const typing = addMessage("Michelino sta impastando...", "bot");
+
     setTimeout(() => {
-        const reply = responses[Math.floor(Math.random() * responses.length)];
-        addMessage(reply, "bot");
-    }, 500);
+        typing.remove();
+        addMessage(getResponse(text), "bot");
+    }, 800);
 }
 
 function addMessage(text, sender) {
@@ -112,7 +154,13 @@ function addMessage(text, sender) {
     msg.innerText = text;
     messages.appendChild(msg);
     messages.scrollTop = messages.scrollHeight;
+    return msg;
 }
+
+window.onload = function() {
+    addMessage("Benvenuto! Io sono Michelino Pane e Vino 🍞🍷 Dimmi cosa ti frulla in testa!", "bot");
+};
+
 </script>
 
 </body>
