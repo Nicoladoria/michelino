@@ -19,7 +19,6 @@ body {
 h1 {
   margin-top: 20px;
   color: #7a1f1f;
-  text-shadow: 2px 2px 0 #fff;
 }
 
 .chat-box {
@@ -59,12 +58,19 @@ h1 {
   white-space: pre-line;
 }
 
-.user { background: #d0ebff; align-self: flex-end; }
-.bot { background: #ffe4c4; align-self: flex-start; }
+.user {
+  background: #d0ebff;
+  align-self: flex-end;
+}
 
-.impasto {
+.bot {
+  background: #ffe4c4;
+  align-self: flex-start;
   font-style: italic;
-  opacity: 0.7;
+}
+
+.thinking {
+  opacity: 0.6;
 }
 
 .input-area {
@@ -88,30 +94,19 @@ button {
   font-size: 16px;
   cursor: pointer;
 }
-
-button:active { background: #5c0000; }
-
-.header-image {
-  width: 100%;
-  max-height: 40vh;
-  object-fit: contain;
-  display: block;
-}
 </style>
 </head>
 
 <body>
 
-<img src="michelino.png" alt="Michelino Pane e Vino" class="header-image">
 <h1>🍞 Michelino Pane e Vino 🍷</h1>
 
 <div class="chat-box">
   <div class="header">Parla con Michelino</div>
-
   <div class="messages" id="messages">
     <div class="msg bot">
       Benvenuto! Sono Michelino 🍷  
-      Dimmi qualcosa… anche se non c’entra niente!
+      Chiedimi una ricetta, una filastrocca o anche un calcolo!
     </div>
   </div>
 
@@ -122,126 +117,132 @@ button:active { background: #5c0000; }
 </div>
 
 <script>
-// 🧠 MEMORIA
-let memoria = {
-  nome: null,
-  ultimoMessaggio: null
-};
 
-// 🎭 RISPOSTE BASE
-const risposte = [
-  "Eh… fammi pensare con calma 🍞",
-  "Questa domanda merita un sorso di vino 🍷",
-  "Mah… secondo me sì. Forse.",
-  "Io direi di sì, ma con pane accanto",
-  "Domanda interessante… da osteria!"
-];
+let memoria = { nome: null };
 
-// 🎶 FILASTROCCHE
-const filastrocche = [
-  "Pane caldo sulla tavola,\nMichelino versa e vola.\nVino rosso nel bicchiere,\nporta pace e buon piacere 🍷",
-
-  "Pane fragrante, vino divino,\nMichelino brinda pianino.\nSe la vita sembra amara,\nun buon morso tutto ripara 🍞🍷"
-];
-
-// 🧪 RICETTA MAGICA
-const ingredienti = [
-  "pane dorato",
-  "vino incantato",
-  "lievito stellare",
-  "farina delle colline segrete",
-  "olio d’oliva lunare"
-];
-
-function ricettaMagica() {
-  return "🍞 RICETTA MAGICA 🍷\n\nIngredienti:\n- " +
-    ingredienti.sort(() => 0.5 - Math.random()).slice(0,3).join("\n- ") +
-    "\n\nMescola tutto con calma,\naggiungi vino e fantasia,\ne lascia riposare sotto le stelle ✨";
+function addMessage(text, type, extraClass = "") {
+  const messages = document.getElementById("messages");
+  const msg = document.createElement("div");
+  msg.className = `msg ${type} ${extraClass}`;
+  msg.textContent = text;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  return msg;
 }
 
-// 🤖 PICCOLA INTELLIGENZA ARTIFICIALE
 function capisciIntento(testo) {
   testo = testo.toLowerCase();
 
-  if (testo.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/)) return "calcolo";
+  if (testo.includes("ciao") || testo.includes("salve")) return "saluto";
+  if (testo.includes("come stai")) return "come_stai";
+  if (testo.includes("mi chiamo")) return "impara_nome";
+  if (testo.includes("come mi chiamo")) return "nome";
   if (testo.includes("filastrocca")) return "filastrocca";
   if (testo.includes("ricetta")) return "ricetta";
-  if (testo.includes("come mi chiamo")) return "nome";
-  if (testo.includes("mi chiamo")) return "impara_nome";
-  if (testo.includes("chi sei") || testo.includes("cosa fai")) return "presentazione";
+  if (testo.match(/(-?\d+)\s*[\+\-\*\/]\s*(-?\d+)/)) return "calcolo";
 
   return "chiacchiera";
 }
 
-// 🚀 INVIO MESSAGGIO
 function send() {
   const input = document.getElementById("input");
   const text = input.value.trim();
   if (!text) return;
 
-  const messages = document.getElementById("messages");
-
-  // messaggio utente
-  const userMsg = document.createElement("div");
-  userMsg.className = "msg user";
-  userMsg.textContent = text;
-  messages.appendChild(userMsg);
-
-  memoria.ultimoMessaggio = text;
+  addMessage(text, "user");
   input.value = "";
 
-  // 🥖 MICHELINO STA IMPASTANDO…
-  const impastoMsg = document.createElement("div");
-  impastoMsg.className = "msg bot impasto";
-  impastoMsg.textContent = "🥖 Michelino sta impastando…";
-  messages.appendChild(impastoMsg);
-  messages.scrollTop = messages.scrollHeight;
+  const thinkingMsg = addMessage("Michelino sta impastando… 🍞", "bot", "thinking");
 
   setTimeout(() => {
-    let risposta;
-    const intento = capisciIntento(text);
+    thinkingMsg.remove();
+
+    const lowerText = text.toLowerCase();
+    const intento = capisciIntento(lowerText);
+    let risposta = "";
 
     switch (intento) {
 
-      case "calcolo":
-        const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
-        risposta = "Certo che lo so fare 🍞 " + match[0] +
-                   " fa " + eval(match[0]) + " 🍷";
+      case "saluto":
+        risposta = "Ciao! 🍷 Io sono Michelino.\nPane caldo, vino sincero e chiacchiere vere.";
         break;
 
-      case "filastrocca":
-        risposta = filastrocche[Math.floor(Math.random() * filastrocche.length)];
-        break;
-
-      case "ricetta":
-        risposta = ricettaMagica();
+      case "come_stai":
+        risposta =
+          "Oggi mi sento come una pagnotta in forno 😌\n" +
+          "sto crescendo piano piano.\n" +
+          "Con un buon rosso accanto, la giornata migliora sempre 🍷";
         break;
 
       case "impara_nome":
         memoria.nome = text.split("mi chiamo")[1].trim();
-        risposta = "Piacere " + memoria.nome + "! 🍷 Ora me lo ricordo.";
+        risposta = "Piacere di conoscerti, " + memoria.nome + " 🍞 Lo ricorderò!";
         break;
 
       case "nome":
-        risposta = memoria.nome ?
-          "Ti chiami " + memoria.nome + ", come inciso nel pane 🍞" :
-          "Non me l’hai ancora detto!";
+        risposta = memoria.nome
+          ? "Se la mia memoria non è coperta di farina… ti chiami " + memoria.nome + " 😉"
+          : "Non me l’hai ancora detto!";
         break;
 
-      case "presentazione":
-        risposta = "Sono Michelino 🍷 Amo il pane, il vino e le chiacchiere lente.";
+      case "calcolo":
+        try {
+          const match = lowerText.match(/(-?\d+)\s*([\+\-\*\/])\s*(-?\d+)/);
+          risposta = "Risultato caldo caldo: " + eval(match[0]) + " 🍞";
+        } catch {
+          risposta = "Mi si sono intrecciate le dita infarinate 😅";
+        }
         break;
 
-      case "chiacchiera":
+      case "filastrocca":
+        risposta =
+          "🍞 Nel forno antico di un vecchio mulino,\n" +
+          "viveva allegro un pane doratino.\n\n" +
+          "Ballava lieve tra sacchi di farina,\n" +
+          "cantando al vino ogni mattina.\n\n" +
+          "Se il mondo fuori sembra severo,\n" +
+          "versa un rosso sincero.\n\n" +
+          "Perché tra briciole e fantasia,\n" +
+          "nasce sempre un po’ di magia.\n\n" +
+          "E quando il cuore è un po’ stanchino,\n" +
+          "ti salva sempre Michelino 🍷";
+        break;
+
+      case "ricetta":
+        risposta =
+          "✨ GRANDE RICETTA MAGICA DI MICHELINO ✨\n\n" +
+          "📜 Nome: Il Pane dell’Anima Serena\n\n" +
+          "🧺 Ingredienti:\n" +
+          "- 700g di farina setacciata con pazienza\n" +
+          "- Acqua tiepida quanto basta\n" +
+          "- Lievito vivo come una risata\n" +
+          "- Un bicchiere abbondante di vino rosso 🍷\n" +
+          "- Un pizzico di sogni macinati\n\n" +
+          "🧙‍♂️ Procedimento Segreto:\n" +
+          "1. Impasta lentamente pensando a qualcosa che ami.\n" +
+          "2. Lascia riposare l’impasto almeno un’ora.\n" +
+          "3. Inforna finché il profumo invade la casa.\n\n" +
+          "✨ Effetto Finale:\n" +
+          "Calore nel cuore,\n" +
+          "mente leggera,\n" +
+          "e voglia di raccontare storie davanti a un bicchiere.";
+        break;
+
       default:
-        risposta = risposte[Math.floor(Math.random() * risposte.length)];
+        const casuali = [
+          "Domanda interessante… fammi pensare 🍞",
+          "Secondo me sì. O forse no. Dipende dal vino 🍷",
+          "Questa è da discutere davanti al forno acceso.",
+          "Non lo so… ma mi piace come suona!"
+        ];
+        risposta = casuali[Math.floor(Math.random() * casuali.length)];
     }
 
-    impastoMsg.textContent = risposta;
-    messages.scrollTop = messages.scrollHeight;
+    addMessage(risposta, "bot");
 
-  }, 700);
+  }, 1000);
 }
+
 </script>
 
 </body>
