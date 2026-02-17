@@ -195,18 +195,19 @@ function send() {
     else if (!isNaN(lowerText)) {
         risposta = "Se mi dai un'operazione tipo 2+2 la risolvo 😉";
     }
-    else if (
-        lowerText.includes("+") ||
-        lowerText.includes("-") ||
-        lowerText.includes("*") ||
-        lowerText.includes("/")
-    ) {
-        try {
-            risposta = "Risultato: " + eval(lowerText);
-        } catch {
-            risposta = "Operazione non valida 😅";
-        }
+else {
+  const match = lowerText.match(/(-?\d+)\s*([\+\-\*\/])\s*(-?\d+)/);
+
+  if (match) {
+    try {
+      risposta = "Risultato: " + eval(match[0]);
+    } catch {
+      risposta = "Operazione non valida 😅";
     }
+  } else {
+    risposta = risposte[Math.floor(Math.random() * risposte.length)];
+  }
+}
     else {
         risposta = risposte[Math.floor(Math.random() * risposte.length)];
     }
