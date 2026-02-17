@@ -105,7 +105,34 @@ button:active {
 
 </style>
 </head>
+<script>
+function send() {
+  const input = document.getElementById("input");
+  const text = input.value.toLowerCase().trim();
+  if (!text) return;
 
+  addMessage(text, "user");
+
+  let reply = "Non ho capito bene… ma dimmi di più 🍷";
+
+  if (text.includes("ciao") || text.includes("salve")) {
+    reply = "Ciao! Io sono Michelino 🍷 Come posso aiutarti?";
+  }
+  else if (text.includes("come stai")) {
+    reply = "Sto bene! Un po’ di pane, un po’ di vino e passa tutto 🍞🍷";
+  }
+  else if (text.includes("ora")) {
+    reply = "Adesso sono le " + new Date().toLocaleTimeString();
+  }
+  else if (text.includes("consiglio")) {
+    reply = "Il mio consiglio? Le cose semplici fatte bene sono le migliori.";
+  }
+
+  setTimeout(() => addMessage(reply, "bot"), 500);
+  input.value = "";
+
+
+</script>
 <body>
 <img src="michelino.png" alt="Michelino Pane e Vino" class="header-image">
 <h1>🍞 Michelino Pane e Vino 🍷</h1>
@@ -153,13 +180,42 @@ function send() {
 
   input.value = "";
 
-  setTimeout(() => {
-    const botMsg = document.createElement("div");
+  setTimeout(() => {const botMsg = document.createElement("div");
     botMsg.className = "msg bot";
-    botMsg.textContent =
-      risposte[Math.floor(Math.random() * risposte.length)];
+
+    let risposta;
+    const lowerText = text.toLowerCase();
+
+    if (lowerText.includes("ciao")) {
+        risposta = "Ciao! 🍷 Come va oggi?";
+    }
+    else if (lowerText.includes("ora")) {
+        risposta = "Sono le " + new Date().toLocaleTimeString();
+    }
+    else if (!isNaN(lowerText)) {
+        risposta = "Se mi dai un'operazione tipo 2+2 la risolvo 😉";
+    }
+    else if (
+        lowerText.includes("+") ||
+        lowerText.includes("-") ||
+        lowerText.includes("*") ||
+        lowerText.includes("/")
+    ) {
+        try {
+            risposta = "Risultato: " + eval(lowerText);
+        } catch {
+            risposta = "Operazione non valida 😅";
+        }
+    }
+    else {
+        risposta = risposte[Math.floor(Math.random() * risposte.length)];
+    }
+
+    botMsg.textContent = risposta;
     messages.appendChild(botMsg);
     messages.scrollTop = messages.scrollHeight;
-  }, 500);
+
+}, 500);
+    
 }
 </script>
