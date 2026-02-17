@@ -128,39 +128,52 @@ let memoria = {
   ultimoMessaggio: null
 };
 
-// 🎤 VOCE
-function parla(testo) {
-  const utter = new SpeechSynthesisUtterance(testo);
-  utter.pitch = 0.6;
-  utter.rate = 1.05;
-  speechSynthesis.speak(utter);
-}
-
+// 🎭 RISPOSTE BASE
 const risposte = [
   "Eh… fammi pensare con calma 🍞",
-  "Questa domanda vuole vino 🍷",
+  "Questa domanda merita un sorso di vino 🍷",
   "Mah… secondo me sì. Forse.",
-  "Io direi di sì, ma con pane accanto"
+  "Io direi di sì, ma con pane accanto",
+  "Domanda interessante… da osteria!"
 ];
 
+// 🎶 FILASTROCCHE
 const filastrocche = [
   "Pane caldo sulla tavola,\nMichelino versa e vola.\nVino rosso nel bicchiere,\nporta pace e buon piacere 🍷",
-  "Pane fragrante, vino divino,\nMichelino brinda pianino 🍞🍷"
+
+  "Pane fragrante, vino divino,\nMichelino brinda pianino.\nSe la vita sembra amara,\nun buon morso tutto ripara 🍞🍷"
 ];
 
+// 🧪 RICETTA MAGICA
 const ingredienti = [
   "pane dorato",
-  "vino magico",
+  "vino incantato",
   "lievito stellare",
-  "farina incantata"
+  "farina delle colline segrete",
+  "olio d’oliva lunare"
 ];
 
 function ricettaMagica() {
   return "🍞 RICETTA MAGICA 🍷\n\nIngredienti:\n- " +
     ingredienti.sort(() => 0.5 - Math.random()).slice(0,3).join("\n- ") +
-    "\n\nMescola tutto con amore e vino!";
+    "\n\nMescola tutto con calma,\naggiungi vino e fantasia,\ne lascia riposare sotto le stelle ✨";
 }
 
+// 🤖 PICCOLA INTELLIGENZA ARTIFICIALE
+function capisciIntento(testo) {
+  testo = testo.toLowerCase();
+
+  if (testo.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/)) return "calcolo";
+  if (testo.includes("filastrocca")) return "filastrocca";
+  if (testo.includes("ricetta")) return "ricetta";
+  if (testo.includes("come mi chiamo")) return "nome";
+  if (testo.includes("mi chiamo")) return "impara_nome";
+  if (testo.includes("chi sei") || testo.includes("cosa fai")) return "presentazione";
+
+  return "chiacchiera";
+}
+
+// 🚀 INVIO MESSAGGIO
 function send() {
   const input = document.getElementById("input");
   const text = input.value.trim();
@@ -177,7 +190,7 @@ function send() {
   memoria.ultimoMessaggio = text;
   input.value = "";
 
-  // 👨‍🍳 MICHELINO STA IMPASTANDO
+  // 🥖 MICHELINO STA IMPASTANDO…
   const impastoMsg = document.createElement("div");
   impastoMsg.className = "msg bot impasto";
   impastoMsg.textContent = "🥖 Michelino sta impastando…";
@@ -186,31 +199,47 @@ function send() {
 
   setTimeout(() => {
     let risposta;
-    const lower = text.toLowerCase();
-    const match = lower.match(/(-?\d+)\s*([\+\-\*\/])\s*(-?\d+)/);
+    const intento = capisciIntento(text);
 
-    if (lower.includes("mi chiamo")) {
-      memoria.nome = text.split("mi chiamo")[1].trim();
-      risposta = "Piacere " + memoria.nome + "! 🍷";
-    }
-    else if (lower.includes("come mi chiamo")) {
-      risposta = memoria.nome ? "Ti chiami " + memoria.nome : "Non me l’hai detto!";
-    }
-    else if (lower.includes("filastrocca")) {
-      risposta = filastrocche[Math.floor(Math.random() * filastrocche.length)];
-    }
-    else if (lower.includes("ricetta")) {
-      risposta = ricettaMagica();
-    }
-    else if (match) {
-      risposta = "Risultato: " + eval(match[0]);
-    }
-    else {
-      risposta = risposte[Math.floor(Math.random() * risposte.length)];
+    switch (intento) {
+
+      case "calcolo":
+        const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
+        risposta = "Certo che lo so fare 🍞 " + match[0] +
+                   " fa " + eval(match[0]) + " 🍷";
+        break;
+
+      case "filastrocca":
+        risposta = filastrocche[Math.floor(Math.random() * filastrocche.length)];
+        break;
+
+      case "ricetta":
+        risposta = ricettaMagica();
+        break;
+
+      case "impara_nome":
+        memoria.nome = text.split("mi chiamo")[1].trim();
+        risposta = "Piacere " + memoria.nome + "! 🍷 Ora me lo ricordo.";
+        break;
+
+      case "nome":
+        risposta = memoria.nome ?
+          "Ti chiami " + memoria.nome + ", come inciso nel pane 🍞" :
+          "Non me l’hai ancora detto!";
+        break;
+
+      case "presentazione":
+        risposta = "Sono Michelino 🍷 Amo il pane, il vino e le chiacchiere lente.";
+        break;
+
+      case "chiacchiera":
+      default:
+        risposta = risposte[Math.floor(Math.random() * risposte.length)];
     }
 
     impastoMsg.textContent = risposta;
-    parla(risposta);
+    messages.scrollTop = messages.scrollHeight;
+
   }, 700);
 }
 </script>
