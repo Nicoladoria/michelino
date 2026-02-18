@@ -106,7 +106,7 @@ button {
 
 <body>
 
-<img src="michelino.png" alt="Michelino Pane e Vino" class="header-image">
+<img src="michelino.png" class="header-image" alt="Michelino">
 
 <h1>🍞 Michelino Pane e Vino 🍷</h1>
 
@@ -114,8 +114,8 @@ button {
   <div class="header">Parla con Michelino</div>
   <div class="messages" id="messages">
     <div class="msg bot">
-      Benvenuto! Sono Michelino 🍷  
-      Chiedimi una ricetta, una filastrocca o anche un calcolo!
+      Sono Michelino 🍷  
+      Chiedimi storie, poesie, ricette, calcoli… o che ore sono!
     </div>
   </div>
 
@@ -128,20 +128,30 @@ button {
 <script>
 let memoria = JSON.parse(localStorage.getItem("memoriaMichelino")) || {
   nome: null,
-  capitolo: 0
+  capitolo: 0,
+  personalita: "saggio"
 };
+
+const personalitaPossibili = ["saggio", "confuso", "poeta", "pasticcione"];
 
 function salvaMemoria() {
   localStorage.setItem("memoriaMichelino", JSON.stringify(memoria));
 }
 
-function addMessage(text, type, extra = "") {
-  const m = document.createElement("div");
-  m.className = `msg ${type} ${extra}`;
-  m.textContent = text;
-  document.getElementById("messages").appendChild(m);
-  m.scrollIntoView();
-  return m;
+function cambiaPersonalita() {
+  if (Math.random() < 0.25) {
+    memoria.personalita = personalitaPossibili[Math.floor(Math.random() * personalitaPossibili.length)];
+    salvaMemoria();
+  }
+}
+
+function addMessage(text, type, extra="") {
+  const msg = document.createElement("div");
+  msg.className = `msg ${type} ${extra}`;
+  msg.textContent = text;
+  document.getElementById("messages").appendChild(msg);
+  msg.scrollIntoView();
+  return msg;
 }
 
 function send() {
@@ -156,49 +166,88 @@ function send() {
 
   setTimeout(() => {
     thinking.remove();
-    const t = text.toLowerCase();
-    let r = "";
+    cambiaPersonalita();
+    addMessage(generaRisposta(text), "bot");
+  }, 1100);
+}
 
-    if (t.includes("mi chiamo")) {
-      memoria.nome = t.split("mi chiamo")[1].trim();
-      salvaMemoria();
-      r = `Piacere ${memoria.nome}! Me lo segno con la farina 🍞`;
-    }
-    else if (t.includes("come mi chiamo")) {
-      r = memoria.nome ? `Ti chiami ${memoria.nome} 😉` : "Non me l’hai detto!";
-    }
-    else if (t.includes("filastrocca")) {
-      r = `🍞 Nel forno canta il grano,
-col vino rosso piano piano…
+function generaRisposta(text) {
+  const t = text.toLowerCase();
 
-Tra farina e fantasia
-nasce sempre magia,
-se la vita sembra dura
-c’è una crosta che ti cura 🍷`;
-    }
-    else if (t.includes("ricetta")) {
-      r = `✨ RICETTA MAGICA DEL PANE SACRO ✨
+  if (t.includes("che ore")) {
+    const d = new Date();
+    return tono(`Sono le ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")} ⏰`);
+  }
 
-Ingredienti:
-- Farina sincera
-- Acqua paziente
-- Lievito antico
-- Vino rosso 🍷
+  if (t.includes("mi chiamo")) {
+    memoria.nome = t.split("mi chiamo")[1].trim();
+    salvaMemoria();
+    return tono(`Piacere ${memoria.nome}, lo ricorderò tra pane e vino.`);
+  }
 
-Procedimento:
-Impasta con calma,
-cuoci con amore,
-condividi e troverai serenità.`;
-    }
-    else if (t.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/)) {
-      r = "Risultato: " + eval(t.match(/(\d+\s*[\+\-\*\/]\s*\d+)/)[0]);
-    }
-    else {
-      r = "Mah… fammi un attimo pensare col pane caldo 😌";
-    }
+  if (t.includes("come mi chiamo"))
+    return memoria.nome ? tono(`Ti chiami ${memoria.nome}.`) : tono("Non me l’hai ancora detto.");
 
-    addMessage(r, "bot");
-  }, 1000);
+  if (t.includes("storia")) return storia();
+  if (t.includes("continua")) return storia();
+  if (t.includes("poesia") || t.includes("filastrocca")) return poesia();
+  if (t.includes("ricetta")) return ricetta();
+
+  if (t.match(/(-?\d+)\s*[\+\-\*\/]\s*(-?\d+)/)) {
+    try {
+      const op = t.match(/(-?\d+\s*[\+\-\*\/]\s*-?\d+)/)[0];
+      return tono("Risultato: " + eval(op));
+    } catch {
+      return tono("Ho sbagliato i conti col vino 😅");
+    }
+  }
+
+  return tono(fraseCasuale());
+}
+
+function tono(frase) {
+  const extra = {
+    saggio: " (forno antico)",
+    confuso: " (forse troppo vino 🍷)",
+    poeta: " (parole di grano)",
+    pasticcione: " (farina ovunque!)"
+  };
+  return frase + "\n" + extra[memoria.personalita];
+}
+
+function fraseCasuale() {
+  const f = [
+    "Domanda da osteria.",
+    "Fammi pensare col pane caldo.",
+    "Serve un sorso prima di rispondere.",
+    "Questa lievita lentamente."
+  ];
+  return f[Math.floor(Math.random()*f.length)];
+}
+
+function poesia() {
+  const a = ["Sotto un cielo di farina,", "Nel forno della sera,", "Tra botti antiche,", "Quando il pane sogna,"];
+  const b = ["il vino canta piano,", "le mani cercano pace,", "il tempo rallenta,", "il cuore si scalda,"];
+  const c = ["e tutto trova senso.", "come una domenica lenta.", "finché la notte sorride.", "e nasce la magia."];
+  return tono(`${rnd(a)}\n${rnd(b)}\n${rnd(c)}`);
+}
+
+function storia() {
+  memoria.capitolo++;
+  salvaMemoria();
+  const l = ["nel villaggio del Pane Infinito", "in una cantina segreta", "accanto a un forno antico"];
+  const e = ["il vino parlò", "una pagnotta brillò", "il forno non si spense"];
+  return tono(`📖 CAPITOLO ${memoria.capitolo}\nMichelino viveva ${rnd(l)}.\nUna notte ${rnd(e)}.\n(scrivi “continua”)`);
+}
+
+function ricetta() {
+  const n = ["Pane dell’Anima", "Pagnotta Magica", "Pane della Sera"];
+  const e = ["porta serenità", "unisce chi lo divide", "scalda il cuore"];
+  return tono(`✨ ${rnd(n)} ✨\nIngredienti: farina, acqua, vino 🍷\nProcedimento: impasta con calma.\nEffetto: ${rnd(e)}.`);
+}
+
+function rnd(a) {
+  return a[Math.floor(Math.random()*a.length)];
 }
 </script>
 
