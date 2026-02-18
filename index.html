@@ -18,7 +18,7 @@ body {
 
 .header-image {
   width: 100%;
-  max-height: 40vh;   /* COME NEI CODICI PRECEDENTI */
+  max-height: 40vh;
   object-fit: contain;
   display: block;
 }
@@ -106,7 +106,6 @@ button {
 
 <body>
 
-<!-- FOTO COME PRIMA -->
 <img src="michelino.png" alt="Michelino Pane e Vino" class="header-image">
 
 <h1>🍞 Michelino Pane e Vino 🍷</h1>
@@ -127,31 +126,22 @@ button {
 </div>
 
 <script>
+let memoria = JSON.parse(localStorage.getItem("memoriaMichelino")) || {
+  nome: null,
+  capitolo: 0
+};
 
-let memoria = { nome: null };
-
-function addMessage(text, type, extraClass = "") {
-  const messages = document.getElementById("messages");
-  const msg = document.createElement("div");
-  msg.className = `msg ${type} ${extraClass}`;
-  msg.textContent = text;
-  messages.appendChild(msg);
-  messages.scrollTop = messages.scrollHeight;
-  return msg;
+function salvaMemoria() {
+  localStorage.setItem("memoriaMichelino", JSON.stringify(memoria));
 }
 
-function capisciIntento(testo) {
-  testo = testo.toLowerCase();
-
-  if (testo.includes("ciao") || testo.includes("salve")) return "saluto";
-  if (testo.includes("come stai")) return "come_stai";
-  if (testo.includes("mi chiamo")) return "impara_nome";
-  if (testo.includes("come mi chiamo")) return "nome";
-  if (testo.includes("filastrocca")) return "filastrocca";
-  if (testo.includes("ricetta")) return "ricetta";
-  if (testo.match(/(-?\d+)\s*[\+\-\*\/]\s*(-?\d+)/)) return "calcolo";
-
-  return "chiacchiera";
+function addMessage(text, type, extra = "") {
+  const m = document.createElement("div");
+  m.className = `msg ${type} ${extra}`;
+  m.textContent = text;
+  document.getElementById("messages").appendChild(m);
+  m.scrollIntoView();
+  return m;
 }
 
 function send() {
@@ -162,97 +152,54 @@ function send() {
   addMessage(text, "user");
   input.value = "";
 
-  const thinkingMsg = addMessage("Michelino sta impastando… 🍞", "bot", "thinking");
+  const thinking = addMessage("Michelino sta impastando… 🍞", "bot", "thinking");
 
   setTimeout(() => {
-    thinkingMsg.remove();
+    thinking.remove();
+    const t = text.toLowerCase();
+    let r = "";
 
-    const lowerText = text.toLowerCase();
-    const intento = capisciIntento(lowerText);
-    let risposta = "";
+    if (t.includes("mi chiamo")) {
+      memoria.nome = t.split("mi chiamo")[1].trim();
+      salvaMemoria();
+      r = `Piacere ${memoria.nome}! Me lo segno con la farina 🍞`;
+    }
+    else if (t.includes("come mi chiamo")) {
+      r = memoria.nome ? `Ti chiami ${memoria.nome} 😉` : "Non me l’hai detto!";
+    }
+    else if (t.includes("filastrocca")) {
+      r = `🍞 Nel forno canta il grano,
+col vino rosso piano piano…
 
-    switch (intento) {
+Tra farina e fantasia
+nasce sempre magia,
+se la vita sembra dura
+c’è una crosta che ti cura 🍷`;
+    }
+    else if (t.includes("ricetta")) {
+      r = `✨ RICETTA MAGICA DEL PANE SACRO ✨
 
-      case "saluto":
-        risposta = "Ciao! 🍷 Io sono Michelino.\nPane caldo, vino sincero e chiacchiere vere.";
-        break;
+Ingredienti:
+- Farina sincera
+- Acqua paziente
+- Lievito antico
+- Vino rosso 🍷
 
-      case "come_stai":
-        risposta =
-          "Oggi mi sento come una pagnotta in forno 😌\n" +
-          "sto crescendo piano piano.\n" +
-          "Con un buon rosso accanto, la giornata migliora sempre 🍷";
-        break;
-
-      case "impara_nome":
-        memoria.nome = text.split("mi chiamo")[1].trim();
-        risposta = "Piacere di conoscerti, " + memoria.nome + " 🍞 Lo ricorderò!";
-        break;
-
-      case "nome":
-        risposta = memoria.nome
-          ? "Se la mia memoria non è coperta di farina… ti chiami " + memoria.nome + " 😉"
-          : "Non me l’hai ancora detto!";
-        break;
-
-      case "calcolo":
-        try {
-          const match = lowerText.match(/(-?\d+)\s*([\+\-\*\/])\s*(-?\d+)/);
-          risposta = "Risultato caldo caldo: " + eval(match[0]) + " 🍞";
-        } catch {
-          risposta = "Mi si sono intrecciate le dita infarinate 😅";
-        }
-        break;
-
-      case "filastrocca":
-        risposta =
-          "🍞 Nel forno antico di un vecchio mulino,\n" +
-          "viveva allegro un pane doratino.\n\n" +
-          "Ballava lieve tra sacchi di farina,\n" +
-          "cantando al vino ogni mattina.\n\n" +
-          "Se il mondo fuori sembra severo,\n" +
-          "versa un rosso sincero.\n\n" +
-          "Perché tra briciole e fantasia,\n" +
-          "nasce sempre un po’ di magia.\n\n" +
-          "E quando il cuore è un po’ stanchino,\n" +
-          "ti salva sempre Michelino 🍷";
-        break;
-
-      case "ricetta":
-        risposta =
-          "✨ GRANDE RICETTA MAGICA DI MICHELINO ✨\n\n" +
-          "📜 Nome: Il Pane dell’Anima Serena\n\n" +
-          "🧺 Ingredienti:\n" +
-          "- 700g di farina setacciata con pazienza\n" +
-          "- Acqua tiepida quanto basta\n" +
-          "- Lievito vivo come una risata\n" +
-          "- Un bicchiere abbondante di vino rosso 🍷\n" +
-          "- Un pizzico di sogni macinati\n\n" +
-          "🧙‍♂️ Procedimento Segreto:\n" +
-          "1. Impasta lentamente pensando a qualcosa che ami.\n" +
-          "2. Lascia riposare l’impasto almeno un’ora.\n" +
-          "3. Inforna finché il profumo invade la casa.\n\n" +
-          "✨ Effetto Finale:\n" +
-          "Calore nel cuore,\n" +
-          "mente leggera,\n" +
-          "e voglia di raccontare storie davanti a un bicchiere.";
-        break;
-
-      default:
-        const casuali = [
-          "Domanda interessante… fammi pensare 🍞",
-          "Secondo me sì. O forse no. Dipende dal vino 🍷",
-          "Questa è da discutere davanti al forno acceso.",
-          "Non lo so… ma mi piace come suona!"
-        ];
-        risposta = casuali[Math.floor(Math.random() * casuali.length)];
+Procedimento:
+Impasta con calma,
+cuoci con amore,
+condividi e troverai serenità.`;
+    }
+    else if (t.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/)) {
+      r = "Risultato: " + eval(t.match(/(\d+\s*[\+\-\*\/]\s*\d+)/)[0]);
+    }
+    else {
+      r = "Mah… fammi un attimo pensare col pane caldo 😌";
     }
 
-    addMessage(risposta, "bot");
-
+    addMessage(r, "bot");
   }, 1000);
 }
-
 </script>
 
 </body>
