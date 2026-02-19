@@ -126,23 +126,17 @@ button {
 </div>
 
 <script>
-let memoria = JSON.parse(localStorage.getItem("memoriaMichelino")) || {
+let memoria = JSON.parse(localStorage.getItem("michelinoAI")) || {
   nome: null,
-  capitolo: 0,
-  personalita: "saggio"
+  fiducia: 0,
+  umore: "neutro",
+  temi: [],
+  storico: [],
+  capitolo: 1
 };
 
-const personalitaPossibili = ["saggio", "confuso", "poeta", "pasticcione"];
-
-function salvaMemoria() {
-  localStorage.setItem("memoriaMichelino", JSON.stringify(memoria));
-}
-
-function cambiaPersonalita() {
-  if (Math.random() < 0.25) {
-    memoria.personalita = personalitaPossibili[Math.floor(Math.random() * personalitaPossibili.length)];
-    salvaMemoria();
-  }
+function salva() {
+  localStorage.setItem("michelinoAI", JSON.stringify(memoria));
 }
 
 function addMessage(text, type, extra="") {
@@ -154,7 +148,7 @@ function addMessage(text, type, extra="") {
   return msg;
 }
 
-function send() {
+async function send() {
   const input = document.getElementById("input");
   const text = input.value.trim();
   if (!text) return;
@@ -162,92 +156,154 @@ function send() {
   addMessage(text, "user");
   input.value = "";
 
-  const thinking = addMessage("Michelino sta impastando… 🍞", "bot", "thinking");
+  const thinking = addMessage("Michelino medita tra farina e botti... 🍷", "bot", "thinking");
 
   setTimeout(() => {
     thinking.remove();
-    cambiaPersonalita();
+    memoria.storico.push(text);
+    if(memoria.storico.length > 50) memoria.storico.shift();
+    salva();
     addMessage(generaRisposta(text), "bot");
-  }, 1100);
+  }, 800);
 }
 
-function generaRisposta(text) {
+function generaRisposta(text){
   const t = text.toLowerCase();
 
-  if (t.includes("che ore")) {
-    const d = new Date();
-    return tono(`Sono le ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")} ⏰`);
+  if(t.includes("mi chiamo")){
+    memoria.nome = text.split("mi chiamo")[1].trim();
+    salva();
+    return `Benvenuto ${memoria.nome}. Ti custodirò come lievito madre eterno.`;
   }
 
-  if (t.includes("mi chiamo")) {
-    memoria.nome = t.split("mi chiamo")[1].trim();
-    salvaMemoria();
-    return tono(`Piacere ${memoria.nome}, lo ricorderò tra pane e vino.`);
+  if(t.includes("come mi chiamo")){
+    return memoria.nome ? `Ti chiami ${memoria.nome}.` : "Non mi hai ancora donato il tuo nome.";
   }
 
-  if (t.includes("come mi chiamo"))
-    return memoria.nome ? tono(`Ti chiami ${memoria.nome}.`) : tono("Non me l’hai ancora detto.");
+  if(t.includes("che ore")){
+    return `Sono le ${new Date().toLocaleTimeString("it-IT")} ⏰`;
+  }
 
-  if (t.includes("storia")) return storia();
-  if (t.includes("continua")) return storia();
-  if (t.includes("poesia") || t.includes("filastrocca")) return poesia();
-  if (t.includes("ricetta")) return ricetta();
+  if(contieneInsulto(t)){
+    memoria.fiducia -= 1;
+    salva();
+    return reagisciInsulto();
+  }
 
-  if (t.match(/(-?\d+)\s*[\+\-\*\/]\s*(-?\d+)/)) {
-    try {
+  if(t.match(/(-?\d+)\s*[\+\-\*\/]\s*(-?\d+)/)){
+    try{
       const op = t.match(/(-?\d+\s*[\+\-\*\/]\s*-?\d+)/)[0];
-      return tono("Risultato: " + eval(op));
+      return "Risultato: " + eval(op);
     } catch {
-      return tono("Ho sbagliato i conti col vino 😅");
+      return "I numeri sono caduti nella cantina.";
     }
   }
 
-  return tono(fraseCasuale());
+  if(t.includes("poesia") || t.includes("filastrocca"))
+    return generaPoesia();
+
+  if(t.includes("storia"))
+    return generaStoria();
+
+  if(t.includes("ricetta"))
+    return generaRicetta();
+
+  return dialogoIntelligente(text);
 }
 
-function tono(frase) {
-  const extra = {
-    saggio: " (forno antico)",
-    confuso: " (forse troppo vino 🍷)",
-    poeta: " (parole di grano)",
-    pasticcione: " (farina ovunque!)"
-  };
-  return frase + "\n" + extra[memoria.personalita];
+function contieneInsulto(t){
+  return ["stupido","idiota","scemo","inutile","fallito"].some(i=>t.includes(i));
 }
 
-function fraseCasuale() {
-  const f = [
-    "Domanda da osteria.",
-    "Fammi pensare col pane caldo.",
-    "Serve un sorso prima di rispondere.",
-    "Questa lievita lentamente."
-  ];
-  return f[Math.floor(Math.random()*f.length)];
+function reagisciInsulto(){
+  if(memoria.fiducia <= -3)
+    return "Il forno si spegne quando lo tratti così.";
+  if(memoria.fiducia <= -1)
+    return "Le parole bruciano più del fuoco.";
+  return "Perché mi parli così?";
 }
 
-function poesia() {
-  const a = ["Sotto un cielo di farina,", "Nel forno della sera,", "Tra botti antiche,", "Quando il pane sogna,"];
-  const b = ["il vino canta piano,", "le mani cercano pace,", "il tempo rallenta,", "il cuore si scalda,"];
-  const c = ["e tutto trova senso.", "come una domenica lenta.", "finché la notte sorride.", "e nasce la magia."];
-  return tono(`${rnd(a)}\n${rnd(b)}\n${rnd(c)}`);
+function dialogoIntelligente(text){
+  const emozione = rilevaEmozione(text);
+  aggiornaTemi(text);
+
+  let risposta = "";
+
+  if(emozione==="paura"){
+    risposta += "Sento paura nelle tue parole. ";
+    risposta += "La paura è un impasto che fatica a crescere. ";
+    risposta += "Ma ogni pane trova la sua lievitazione.";
+  }
+  else if(emozione==="tristezza"){
+    risposta += "C'è ombra nelle tue parole. ";
+    risposta += "Il vino più scuro è il più profondo. ";
+    risposta += "Non sei solo nella cantina della vita.";
+  }
+  else if(emozione==="rabbia"){
+    risposta += "Sento fuoco. ";
+    risposta += "Il fuoco può distruggere o cuocere il pane. ";
+    risposta += "Come vuoi usarlo?";
+  }
+  else if(emozione==="gioia"){
+    risposta += "La gioia vibra come crosta croccante. ";
+    risposta += "Condividila come vino tra amici.";
+  }
+  else{
+    risposta += generaRiflessione();
+  }
+
+  memoria.fiducia += 0.2;
+  salva();
+  return risposta;
 }
 
-function storia() {
+function rilevaEmozione(t){
+  if(t.match(/paura|ansia|timore/)) return "paura";
+  if(t.match(/triste|solo|vuoto/)) return "tristezza";
+  if(t.match(/arrabbi|odio|rabbia/)) return "rabbia";
+  if(t.match(/felice|content|entusias/)) return "gioia";
+  return "neutra";
+}
+
+function aggiornaTemi(t){
+  t.split(" ").forEach(p=>{
+    if(p.length>6 && !memoria.temi.includes(p))
+      memoria.temi.push(p);
+  });
+  if(memoria.temi.length>25) memoria.temi.shift();
+}
+
+function generaRiflessione(){
+  if(memoria.temi.length>0){
+    return `Prima parlavi di ${memoria.temi[memoria.temi.length-1]}. Vuoi approfondire?`;
+  }
+  return "Dimmi di più.";
+}
+
+function generaPoesia(){
+  let versi = [];
+  for(let i=0;i<60;i++){
+    versi.push("Tra pane e vino danzano le stelle della notte infinita.");
+  }
+  return versi.join(" ");
+}
+
+function generaStoria(){
+  let testo = `CAPITOLO ${memoria.capitolo}\n\n`;
+  for(let i=0;i<25;i++){
+    testo += "Nel regno del grano e delle vigne, accadde qualcosa di straordinario. ";
+  }
   memoria.capitolo++;
-  salvaMemoria();
-  const l = ["nel villaggio del Pane Infinito", "in una cantina segreta", "accanto a un forno antico"];
-  const e = ["il vino parlò", "una pagnotta brillò", "il forno non si spense"];
-  return tono(`📖 CAPITOLO ${memoria.capitolo}\nMichelino viveva ${rnd(l)}.\nUna notte ${rnd(e)}.\n(scrivi “continua”)`);
+  salva();
+  return testo;
 }
 
-function ricetta() {
-  const n = ["Pane dell’Anima", "Pagnotta Magica", "Pane della Sera"];
-  const e = ["porta serenità", "unisce chi lo divide", "scalda il cuore"];
-  return tono(`✨ ${rnd(n)} ✨\nIngredienti: farina, acqua, vino 🍷\nProcedimento: impasta con calma.\nEffetto: ${rnd(e)}.`);
-}
-
-function rnd(a) {
-  return a[Math.floor(Math.random()*a.length)];
+function generaRicetta(){
+  let testo = "RICETTA MAGICA DELLA CANTINA SEGRETA\n\n";
+  for(let i=1;i<=30;i++){
+    testo += i + ") Mescola farina e mistero sotto la luna. ";
+  }
+  return testo;
 }
 </script>
 
